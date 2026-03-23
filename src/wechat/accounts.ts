@@ -19,7 +19,7 @@ const ACCOUNTS_DIR = join(homedir(), '.wechat-claude-code', 'accounts');
 
 /** Reject accountIds containing path traversal or unexpected characters. */
 function validateAccountId(accountId: string): void {
-  if (!/^[a-zA-Z0-9_-]+$/.test(accountId)) {
+  if (!/^[a-zA-Z0-9@._-]+$/.test(accountId)) {
     throw new Error(`Invalid accountId: "${accountId}"`);
   }
 }

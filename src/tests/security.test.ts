@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 // Re-implement the validation logic here since the original is not exported
 function validateAccountId(accountId: string): void {
-  if (!/^[a-zA-Z0-9_-]+$/.test(accountId)) {
+  if (!/^[a-zA-Z0-9@._-]+$/.test(accountId)) {
     throw new Error(`Invalid accountId: "${accountId}"`);
   }
 }
@@ -17,6 +17,11 @@ describe('validateAccountId — path traversal prevention', () => {
     assert.doesNotThrow(() => validateAccountId('bot-123'));
     assert.doesNotThrow(() => validateAccountId('abc_DEF_456'));
     assert.doesNotThrow(() => validateAccountId('simple'));
+  });
+
+  it('accepts WeChat-style accountIds with @ and .', () => {
+    assert.doesNotThrow(() => validateAccountId('95dd3944409a@im.bot'));
+    assert.doesNotThrow(() => validateAccountId('user@service.name'));
   });
 
   it('rejects path traversal patterns', () => {
