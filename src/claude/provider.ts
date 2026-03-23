@@ -19,7 +19,7 @@ export interface QueryOptions {
   cwd: string;
   resume?: string;
   model?: string;
-  permissionMode?: "default" | "acceptEdits" | "plan";
+  permissionMode?: "default" | "acceptEdits" | "plan" | "bypass";
   images?: Array<{
     type: "image";
     source: { type: "base64"; media_type: string; data: string };
@@ -124,17 +124,27 @@ export async function claudeQuery(options: QueryOptions): Promise<QueryResult> {
     : prompt;
 
   // --- Build SDK options ---
+  const isBypass = permissionMode === "bypass";
   const sdkOptions: Options = {
     cwd,
-    permissionMode,
+    permissionMode: isBypass ? "default" : permissionMode,
     settingSources: ["user", "project"],
   };
 
   if (model) sdkOptions.model = model;
   if (resume) sdkOptions.resume = resume;
 
-  // Permission callback — bridges the SDK's CanUseTool to our simpler handler.
-  if (onPermissionRequest) {
+  // Bypass mode: auto-allow all tool uses without asking.
+  // Normal mode: bridge the SDK's CanUseTool to WeChat permission flow.
+  if (isBypass) {
+    sdkOptions.canUseTool = async (
+      toolName: string,
+      input: Record<string, unknown>,
+    ): Promise<PermissionResult> => {
+      logger.info("Permission auto-allowed (bypass mode)", { toolName });
+      return { behavior: "allow", updatedInput: input };
+    };
+  } else if (onPermissionRequest) {
     const canUseTool: CanUseTool = async (
       toolName: string,
       input: Record<string, unknown>,

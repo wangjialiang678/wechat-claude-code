@@ -5,7 +5,7 @@ import { homedir } from "node:os";
 export interface Config {
   workingDirectory: string;
   model?: string;
-  permissionMode?: "default" | "acceptEdits" | "plan";
+  permissionMode?: "default" | "acceptEdits" | "plan" | "bypass";
 }
 
 const CONFIG_DIR = join(homedir(), ".wechat-claude-code");
@@ -39,7 +39,8 @@ function parseConfigFile(content: string): Config {
         if (
           value === "default" ||
           value === "acceptEdits" ||
-          value === "plan"
+          value === "plan" ||
+          value === "bypass"
         ) {
           config.permissionMode = value;
         }
